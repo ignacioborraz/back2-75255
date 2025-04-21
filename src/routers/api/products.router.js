@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { productsManager } from "../../data/managers/mongo/manager.mongo.js";
+import passport from "passport";
 
 const productsRouter = Router();
 
@@ -7,6 +8,7 @@ const createOne = async (req, res, next) => {
   try {
     const { method, originalUrl: url } = req;
     const data = req.body;
+    data.owner_id = req.user._id;
     const response = await productsManager.createOne(data);
     res.status(201).json({ response, method, url });
   } catch (error) {
@@ -74,11 +76,27 @@ const destroyById = async (req, res, next) => {
     next(error);
   }
 };
+const optsForbidden = {
+  session: false,
+  failureRedirect: "/api/auth/forbidden",
+};
 
-productsRouter.post("/", createOne);
+productsRouter.post(
+  "/",
+  passport.authenticate("admin", optsForbidden),
+  createOne
+);
 productsRouter.get("/", readAll);
 productsRouter.get("/:id", readById);
-productsRouter.put("/:id", updateById);
-productsRouter.delete("/:id", destroyById);
+productsRouter.put(
+  "/:id",
+  passport.authenticate("admin", optsForbidden),
+  updateById
+);
+productsRouter.delete(
+  "/:id",
+  passport.authenticate("admin", optsForbidden),
+  destroyById
+);
 
 export default productsRouter;

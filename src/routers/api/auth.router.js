@@ -1,30 +1,16 @@
 import { Router } from "express";
-import { usersManager } from "../../data/managers/mongo/manager.mongo.js";
-import { compareHash, createHash } from "../../helpers/hash.helper.js";
 import isUser from "../../middlewares/isUser.mid.js";
+import passport from "../../middlewares/passport.mid.js";
 
 const authRouter = Router();
 
 const registerCb = async (req, res, next) => {
   try {
     const { method, originalUrl: url } = req;
-    if (!req.body.email || !req.body.password || !req.body.city) {
-      const error = new Error("Invalid data");
-      error.statusCode = 400;
-      throw error;
-    }
-    const { email } = req.body;
-    let user = await usersManager.readBy({ email });
-    if (user) {
-      const error = new Error("Invalid credentials");
-      error.statusCode = 401;
-      throw error;
-    }
-    req.body.password = createHash(req.body.password);
-    user = await usersManager.createOne(req.body);
+    const { _id } = req.user;
     return res
       .status(201)
-      .json({ message: "Registered", response: user._id, method, url });
+      .json({ message: "Registered", response: _id, method, url });
   } catch (error) {
     next(error);
   }
@@ -32,30 +18,11 @@ const registerCb = async (req, res, next) => {
 const loginCb = async (req, res, next) => {
   try {
     const { method, originalUrl: url } = req;
-    const { email, password } = req.body;
-    if (!email || !password) {
-      const error = new Error("Invalid data");
-      error.statusCode = 400;
-      throw error;
-    }
-    let user = await usersManager.readBy({ email });
-    if (!user) {
-      const error = new Error("Invalid credentials");
-      error.statusCode = 401;
-      throw error;
-    }
-    const verifyPass = compareHash(password, user.password);
-    if (!verifyPass) {
-      const error = new Error("Invalid credentials");
-      error.statusCode = 401;
-      throw error;
-    }
-    req.session.user_id = user._id;
-    req.session.email = user.email;
-    req.session.role = user.role;
+    const { _id } = req.user;
     return res
       .status(200)
-      .json({ message: "Logged in", response: user._id, method, url });
+      .cookie("token", req.user.token, { maxAge: 7 * 24 * 60 * 60 * 1000 })
+      .json({ message: "Logged in", response: _id, method, url });
   } catch (error) {
     next(error);
   }
@@ -63,8 +30,7 @@ const loginCb = async (req, res, next) => {
 const signoutCb = (req, res, next) => {
   try {
     const { method, originalUrl: url } = req;
-    req.session.destroy();
-    return res.status(200).json({
+    return res.status(200).clearCookie("token").json({
       message: "Sign out",
       method,
       url,
@@ -83,10 +49,36 @@ const onlineCb = (req, res, next) => {
     next(error);
   }
 };
+const badAuth = (req, res, next) => {
+  try {
+    const error = new Error("Bad auth");
+    error.statusCode = 401;
+    throw error;
+  } catch (error) {
+    next(error);
+  }
+};
+const forbidden = (req, res, next) => {
+  try {
+    const error = new Error("Forbidden");
+    error.statusCode = 403;
+    throw error;
+  } catch (error) {
+    next(error);
+  }
+};
+const optsBad = { session: false, failureRedirect: "/api/auth/bad-auth" };
+const optsForbidden = { session: false, failureRedirect: "/api/auth/forbidden" };
 
-authRouter.post("/register", registerCb);
-authRouter.post("/login", loginCb);
-authRouter.post("/signout", isUser, signoutCb);
-authRouter.post("/online", isUser, onlineCb);
+authRouter.post(
+  "/register",
+  passport.authenticate("register", optsBad),
+  registerCb
+);
+authRouter.post("/login", passport.authenticate("login", optsBad), loginCb);
+authRouter.post("/signout", passport.authenticate("user", optsForbidden), signoutCb);
+authRouter.post("/online", passport.authenticate("user", optsForbidden), onlineCb);
+authRouter.get("/bad-auth", badAuth);
+authRouter.get("/forbidden", forbidden);
 
 export default authRouter;
