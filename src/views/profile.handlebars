@@ -1,0 +1,17 @@
+<h1 class="bg-success-subtle p-2 text-center text-success w-100">PROFILE</h1>
+<section class="d-flex flex-wrap justify-content-evenly">
+  <div class="card m-1" style="width: 18rem;">
+    <img src={{user.avatar}} class="card-img-top object-fit-cover" alt={{user._id}} style="height: 12rem;">
+    <div class="card-body d-flex flex-column justify-content-center">
+      {{#if user.name}}
+      <p class="card-title text-center">{{user.name}}</p>
+      {{/if}}
+      {{#if user.date}}
+      <p class="card-text text-center">{{user.date}}</p>
+      {{/if}}
+      <p class="card-text text-center">{{user.city}}</p>
+      <h3 class="card-text text-center">{{user.email}}</h3>
+      <a href="/update-user" class="btn btn-success">update</a>
+    </div>
+  </div>
+</section>

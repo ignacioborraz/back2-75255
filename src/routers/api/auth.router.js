@@ -1,6 +1,6 @@
 import { Router } from "express";
-import isUser from "../../middlewares/isUser.mid.js";
-import passport from "../../middlewares/passport.mid.js";
+import passportCb from "../../middlewares/passportCb.mid.js";
+//import passport from "../../middlewares/passport.mid.js";
 
 const authRouter = Router();
 
@@ -67,17 +67,21 @@ const forbidden = (req, res, next) => {
     next(error);
   }
 };
-const optsBad = { session: false, failureRedirect: "/api/auth/bad-auth" };
-const optsForbidden = { session: false, failureRedirect: "/api/auth/forbidden" };
+/* const optsBad = { session: false, failureRedirect: "/api/auth/bad-auth" };
+const optsForbidden = {
+  session: false,
+  failureRedirect: "/api/auth/forbidden",
+}; */
 
-authRouter.post(
-  "/register",
-  passport.authenticate("register", optsBad),
-  registerCb
+authRouter.post("/register", passportCb("register"), registerCb);
+authRouter.post("/login", passportCb("login"), loginCb);
+authRouter.post("/signout", passportCb("user"), signoutCb);
+authRouter.post("/online", passportCb("user"), onlineCb);
+authRouter.get(
+  "/google",
+  passportCb("google", { scope: ["email", "profile"] })
 );
-authRouter.post("/login", passport.authenticate("login", optsBad), loginCb);
-authRouter.post("/signout", passport.authenticate("user", optsForbidden), signoutCb);
-authRouter.post("/online", passport.authenticate("user", optsForbidden), onlineCb);
+authRouter.get("/google/redirect", passportCb("google"), loginCb);
 authRouter.get("/bad-auth", badAuth);
 authRouter.get("/forbidden", forbidden);
 
