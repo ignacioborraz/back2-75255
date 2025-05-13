@@ -3,56 +3,43 @@ import { productsManager } from "../../data/managers/mongo/manager.mongo.js";
 import passport from "passport";
 
 const createOne = async (req, res) => {
-  const { method, originalUrl: url } = req;
   const data = req.body;
   data.owner_id = req.user._id;
   const response = await productsManager.createOne(data);
-  res.status(201).json({ response, method, url });
+  res.json201(response);
 };
 const readAll = async (req, res) => {
-  const { method, originalUrl: url } = req;
   const filter = req.query;
   const response = await productsManager.readAll(filter);
   if (response.length === 0) {
-    const error = new Error("Not found");
-    error.statusCode = 404;
-    throw error;
+    res.json404();
   }
-  res.status(200).json({ response, method, url });
+  res.json200(response);
 };
 const readById = async (req, res) => {
-  const { method, originalUrl: url } = req;
   const { id } = req.params;
   const response = await productsManager.readById(id);
   if (!response) {
-    const error = new Error("Not found");
-    error.statusCode = 404;
-    throw error;
+    res.json404();
   }
-  res.status(200).json({ response, method, url });
+  res.json200(response);
 };
 const updateById = async (req, res) => {
-  const { method, originalUrl: url } = req;
   const { id } = req.params;
   const data = req.body;
   const response = await productsManager.updateById(id, data);
   if (!response) {
-    const error = new Error("Not found");
-    error.statusCode = 404;
-    throw error;
+    res.json404();
   }
-  res.status(200).json({ response, method, url });
+  res.json200(response);
 };
 const destroyById = async (req, res) => {
-  const { method, originalUrl: url } = req;
   const { id } = req.params;
   const response = await productsManager.destroyById(id);
   if (!response) {
-    const error = new Error("Not found");
-    error.statusCode = 404;
-    throw error;
+    res.json404();
   }
-  res.status(200).json({ response, method, url });
+  res.json200(response);
 };
 const optsForbidden = {
   session: false,
@@ -65,19 +52,11 @@ class ProductsRouter extends RouterHelper {
     this.init();
   }
   init = () => {
-    this.create("/", passport.authenticate("admin", optsForbidden), createOne);
-    this.read("/", readAll);
-    this.read("/:id", readById);
-    this.update(
-      "/:id",
-      passport.authenticate("admin", optsForbidden),
-      updateById
-    );
-    this.destroy(
-      "/:id",
-      passport.authenticate("admin", optsForbidden),
-      destroyById
-    );
+    this.create("/", ["ADMIN"], createOne);
+    this.read("/", ["PUBLIC"], readAll);
+    this.read("/:id", ["PUBLIC"], readById);
+    this.update("/:id", ["ADMIN"], updateById);
+    this.destroy("/:id", ["ADMIN"], destroyById);
   };
 }
 
