@@ -5,14 +5,17 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node ./index.js",
-    "dev": "node --watch ./index.js"
+    "start": "node ./index.js --mode prod",
+    "dev": "node --watch ./index.js --mode dev",
+    "test": "node ./index.js --mode test",
+    "qa": "node ./index.js --mode qa"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "commander": "^14.0.0",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
