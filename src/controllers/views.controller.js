@@ -1,7 +1,7 @@
-import { readAllService, readByIdService } from "../services/products.service.js"
+import { productsService } from "../services/service.js"
 
 const indexView = async (req, res) => {
-  const products = await readAllService()
+  const products = await productsService.readAllService()
   res.status(200).render("index", { products });
 };
 const registerView = async (req, res) => {
@@ -12,7 +12,7 @@ const loginView = async (req, res) => {
 };
 const detailsView = async (req, res) => {
   const { pid } = req.params;
-  const product = await readByIdService(pid)
+  const product = await productsService.readByIdService(pid)
   res.status(200).render("details", { product });
 };
 const profileView = async (req, res) => {

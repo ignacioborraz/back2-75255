@@ -11,13 +11,16 @@ import argvsHelper from "./src/helpers/argvs.helper.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
+import cors from "cors"
 
 /* server settings */
 const server = express();
 const port = process.env.PORT || 8080;
 const ready = async () => {
   console.log("server ready on port " + port + " and mode " + argvsHelper.mode);
-  await dbConnect(process.env.LINK_DB);
+  if (process.env.PERSISTENCE === "mongo") {
+    await dbConnect(process.env.LINK_DB);
+  }
 };
 server.listen(port, ready);
 
@@ -32,6 +35,10 @@ server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 server.use(express.static("public"));
 server.use(morgan("dev"));
+server.use(cors({
+  origin: true,
+  credentials: true
+}))
 
 /* sessions settings */
 server.use(

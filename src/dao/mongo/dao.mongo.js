@@ -1,6 +1,6 @@
-import Product from "../../models/products.model.js";
-import Cart from "../../models/carts.model.js";
-import User from "../../models/users.model.js";
+import Product from "./models/products.model.js";
+import Cart from "./models/carts.model.js";
+import User from "./models/users.model.js";
 
 class Manager {
   constructor(model) {

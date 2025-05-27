@@ -1,10 +1,14 @@
-import { productsManager } from "../data/managers/mongo/manager.mongo.js";
+//import { productsRepository } from "../dao/mongo/dao.mongo.js";
+//import { productsRepository } from "../dao/fs/dao.fs.js";
+//import { productsRepository } from "../dao/memory/dao.memory.js";
 
-const createOneService = async (data) => await productsManager.createOne(data);
-const readAllService = async (filter) => await productsManager.readAll(filter);
-const readByIdService = async (id) => await productsManager.readById(id);
-const updateByIdService = async (id, data) => await productsManager.updateById(id, data);
-const destroyByIdService = async (id) => await productsManager.destroyById(id);
+import { productsRepository } from "../repositories/repository.js";
+
+const createOneService = async (data) => await productsRepository.createOne(data);
+const readAllService = async (filter) => await productsRepository.readAll(filter);
+const readByIdService = async (id) => await productsRepository.readById(id);
+const updateByIdService = async (id, data) => await productsRepository.updateById(id, data);
+const destroyByIdService = async (id) => await productsRepository.destroyById(id);
 
 export {
   createOneService,

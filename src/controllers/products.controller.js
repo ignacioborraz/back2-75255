@@ -1,20 +1,16 @@
 import {
-  createOneService,
-  readAllService,
-  readByIdService,
-  updateByIdService,
-  destroyByIdService,
-} from "../services/products.service.js";
+  productsService
+} from "../services/service.js";
 
 const createOne = async (req, res) => {
   const data = req.body;
   data.owner_id = req.user._id;
-  const response = await createOneService(data);
+  const response = await productsService.createOne(data);
   res.json201(response);
 };
 const readAll = async (req, res) => {
   const filter = req.query;
-  const response = await readAllService(filter);
+  const response = await productsService.readAll(filter);
   if (response.length === 0) {
     res.json404();
   }
@@ -22,7 +18,7 @@ const readAll = async (req, res) => {
 };
 const readById = async (req, res) => {
   const { id } = req.params;
-  const response = await readByIdService(id);
+  const response = await productsService.readByIdService(id);
   if (!response) {
     res.json404();
   }
@@ -31,7 +27,7 @@ const readById = async (req, res) => {
 const updateById = async (req, res) => {
   const { id } = req.params;
   const data = req.body;
-  const response = await updateByIdService(id, data);
+  const response = await productsService.updateByIdService(id, data);
   if (!response) {
     res.json404();
   }
@@ -39,7 +35,7 @@ const updateById = async (req, res) => {
 };
 const destroyById = async (req, res) => {
   const { id } = req.params;
-  const response = await destroyByIdService(id);
+  const response = await productsService.destroyByIdService(id);
   if (!response) {
     res.json404();
   }
