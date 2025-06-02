@@ -5,6 +5,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth2";
 import { usersRepository } from "../repositories/repository.js";
 import { createHash, compareHash } from "../helpers/hash.helper.js";
 import { createToken } from "../helpers/token.helper.js";
+import verifyEmail from "../helpers/verifyEmail.helper.js";
 
 const callbackURL = "http://localhost:8080/api/auth/google/redirect";
 
@@ -22,22 +23,17 @@ passport.use(
     async (req, email, password, done) => {
       try {
         if (!req.body.city) {
-          //const error = new Error("Invalid data");
-          //error.statusCode = 400;
-          //throw error;
           return done(null, null, { message: "Invalid data", statusCode: 400 });
         }
         let user = await usersRepository.readBy({ email });
         if (user) {
-          //const error = new Error("Invalid credentials");
-          //error.statusCode = 401;
-          //throw error;
-          return done(null, null, { message: "Invalid credentials", statusCode: 401 });
+          return done(null, null, {
+            message: "Invalid credentials",
+            statusCode: 401,
+          });
         }
         user = await usersRepository.createOne(req.body);
-        /* el primer parámetro de done es el error (si ocurre) */
-        /* el segundo parámetro son los datos del usuario que se guardan en el objeto de req */
-        /* es decir a partir de que se aplica este middleware: existe req.user */
+        await verifyEmail(user.email, user.verifyCode);
         done(null, user);
       } catch (error) {
         done(error);
@@ -53,17 +49,25 @@ passport.use(
       try {
         let user = await usersRepository.readBy({ email });
         if (!user) {
-          return done(null, null, { message: "Invalid credentials", statusCode: 401 });
+          return done(null, null, {
+            message: "Invalid credentials",
+            statusCode: 401,
+          });
         }
         const verifyPass = compareHash(password, user.password);
         if (!verifyPass) {
-          return done(null, null, { message: "Invalid credentials", statusCode: 401 });
+          return done(null, null, {
+            message: "Invalid credentials",
+            statusCode: 401,
+          });
         }
-        /* no necesito sessions porque trabajaremos con token */
-        //req.session.user_id = user._id;
-        //req.session.email = user.email;
-        //req.session.role = user.role;
-        /* crear el token y enviarlo al cliente */
+        const { isVerified } = user;
+        if (!isVerified) {
+          return done(null, null, {
+            message: "Please verfify your account!",
+            statusCode: 401,
+          });
+        }
         const data = {
           user_id: user._id,
           email: user.email,
@@ -88,7 +92,11 @@ passport.use(
     async (data, done) => {
       try {
         const { user_id, email, role } = data;
-        const user = await usersRepository.readBy({ _id: user_id, email, role });
+        const user = await usersRepository.readBy({
+          _id: user_id,
+          email,
+          role,
+        });
         if (!user) {
           return done(null, null, { message: "Forbidden", statusCode: 403 });
         }
@@ -109,7 +117,11 @@ passport.use(
     async (data, done) => {
       try {
         const { user_id, email, role } = data;
-        const user = await usersRepository.readBy({ _id: user_id, email, role });
+        const user = await usersRepository.readBy({
+          _id: user_id,
+          email,
+          role,
+        });
         if (!user || user.role !== "ADMIN") {
           return done(null, null, { message: "Forbidden", statusCode: 403 });
         }

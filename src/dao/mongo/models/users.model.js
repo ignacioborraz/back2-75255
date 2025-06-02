@@ -10,6 +10,8 @@ const schema = new Schema(
     password: { type: String, required: true },
     avatar: { type: String, default: "https://cdn-icons-png.flaticon.com/512/266/266033.png" },
     role: { type: String, default: "USER", enum: ["USER", "ADMIN", "PREM"], index: true },
+    isVerified: { type: Boolean, default: false},
+    verifyCode: { type: String }
   },
   { timestamps: true }
 );

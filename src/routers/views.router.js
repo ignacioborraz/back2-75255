@@ -6,6 +6,8 @@ import {
   detailsView,
   profileView,
   updateView,
+  verifyView,
+  resetView,
 } from "../controllers/views.controller.js";
 
 class ViewsRouter extends RouterHelper {
@@ -20,6 +22,8 @@ class ViewsRouter extends RouterHelper {
     this.render("/details/:pid", ["PUBLIC"], detailsView);
     this.render("/profile", ["USER", "ADMIN"], profileView);
     this.render("/update-user", ["USER", "ADMIN"], updateView);
+    this.render("/verify/:email", ["PUBLIC"], verifyView);
+    this.render("/reset/:email", ["PUBLIC"], resetView);
   };
 }
 

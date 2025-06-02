@@ -6,6 +6,7 @@ import {
   onlineCb,
   badAuth,
   forbidden,
+  verifyUserCb
 } from "../../controllers/auth.controller.js";
 import passportCb from "../../middlewares/passportCb.mid.js";
 
@@ -23,6 +24,7 @@ class AuthRouter extends RouterHelper {
     this.read("/google/redirect", ["PUBLIC"], passportCb("google"), loginCb);
     this.read("/bad-auth", ["PUBLIC"], badAuth);
     this.read("/forbidden", ["PUBLIC"], forbidden);
+    this.read("/verify/:email/:verifyCode", ["PUBLIC"], verifyUserCb)
   };
 }
 const authRouter = new AuthRouter().getRouter();
